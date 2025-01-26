@@ -16,6 +16,6 @@ Lists the locked/unlocked recipes for the [Minecraft Crafting-Recipe Randomizer]
 
    and replace `minecraft_server` with the name of your minecraft server directory if necessary
 
-5. Copy over all recipe `.json` files to `src/static/recipes`. You can find these in the randomizer datapack directory: `data/minecraft/recipes`
+5. Copy over all recipe `.json` files to `src/static/recipes/data`. You can find these in the randomizer datapack directory: `data/minecraft/recipes`
 
 4. Run `npm run dev`

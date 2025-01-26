@@ -23,13 +23,13 @@ async function getRecipeProgress(): Promise<RecipeProgressData[]> {
 }
 
 async function loadAllCondensedRecipes(): Promise<ExtendedRecipe[]> {
-	const modules = import.meta.glob(`/static/recipes/*.json`);
+	const modules = import.meta.glob(`/static/recipes/data/*.json`);
 	const paths = Object.keys(modules);
 	const recipes = await Promise.all(
 		paths.map(async (path) => {
 			// eslint-disable-next-line @typescript-eslint/no-explicit-any
 			const data: any = await modules[path]();
-			const recipeName = path.split('/')[3].slice(0, -5);
+			const recipeName = path.split('/')[4].slice(0, -5);
 			return { recipeName: recipeName, ...data.default };
 		})
 	);
