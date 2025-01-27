@@ -11,6 +11,16 @@ export interface RecipeProgressData {
 	isUnlocked: boolean;
 	iconPath?: string;
 	type: RecipeType;
+	recipeIngredients: RecipeIngredients;
+	meta: {
+		favourite?: boolean;
+		isCraftable?: boolean | null;
+	};
+}
+
+export interface RecipeIngredients {
+	requiredItems: string[]; // all items are required
+	optionalItems: string[]; // only one of these items are required
 }
 
 export interface RecipeAdvancement {
