@@ -4,13 +4,21 @@
 	interface InputProps {
 		isChecked: boolean;
 		data: RecipeProgressData | undefined;
+		scrollToElementName: string | undefined;
 	}
 
-	let { isChecked = $bindable(), data }: InputProps = $props();
+	function setScrolledToElementName(name: string) {
+		scrollToElementName = name
+	}
+
+	let { isChecked = $bindable(),scrollToElementName = $bindable(), data }: InputProps = $props();
 </script>
 
 <div class="flex h-full">
-	<div class:-translate-x-0={isChecked && data} class=" fixed inset-y-0 right-0 h-full w-1/4 translate-x-full transform bg-white transition-all duration-300">
+	<div
+		class:-translate-x-0={isChecked && data}
+		class=" fixed inset-y-0 right-0 h-full w-1/4 translate-x-full transform bg-white transition-all duration-300"
+	>
 		<button class="m-4" type="button" aria-label="Close panel" onclick={() => (isChecked = false)}>
 			<ion-icon class="visible fill-slate-900 text-3xl" name="close"> </ion-icon>
 		</button>
@@ -24,7 +32,7 @@
 				<h2 class="text-2xl font-semibold">Result used in:</h2>
 				<ul class="ml-5 list-disc text-lg font-semibold text-slate-500">
 					{#each data?.meta.relatedLockedRecipes ?? [] as relatedRecipe}
-						<li>
+						<li class="cursor-pointer w-fit hover:text-slate-900" onclick={() => setScrolledToElementName(relatedRecipe.craftingRecipeName)}>
 							{relatedRecipe.craftingRecipeName.split('_').join(' ')}
 						</li>
 					{/each}

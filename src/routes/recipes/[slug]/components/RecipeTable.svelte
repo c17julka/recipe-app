@@ -11,16 +11,23 @@
 	let isSidePanelOpen = $state(true);
 	let selectedData: RecipeProgressData | undefined = $state(undefined);
 
-	function getSelectedData(): RecipeProgressData | undefined {
-		const selectedDataCookieValue = document.cookie
-			.split('; ')
-			.find((row) => row.startsWith('selectedData='))
-			?.split('=')[1];
-		const recipeData = data.find((recipe) => recipe.craftingRecipeName === selectedDataCookieValue);
-		console.log(recipeData);
+	let scrollToElementName: string | undefined = $state(undefined);
 
-		return recipeData;
-	}
+    $effect(() => {
+		const elementName = scrollToElementName;
+		if (!elementName) {
+			return;
+		}
+		const element = document.querySelector(`a[href='${mcWikiLink(elementName)}'].recipe-link`);
+
+        if (!element) {
+            return
+        }
+		scrollTo({
+			behavior: 'auto',
+			top: getOffset(element).top
+		});
+	});
 
 	$effect(() => {
 		const selectedDataRecipeName = selectedData?.craftingRecipeName;
@@ -36,8 +43,24 @@
 		} else {
 			document.cookie = ``;
 		}
-		console.log(document.cookie);
 	});
+
+	function getSelectedData(): RecipeProgressData | undefined {
+		const selectedDataCookieValue = document.cookie
+			.split('; ')
+			.find((row) => row.startsWith('selectedData='))
+			?.split('=')[1];
+		const recipeData = data.find((recipe) => recipe.craftingRecipeName === selectedDataCookieValue);
+		return recipeData;
+	}
+
+	function getOffset(element: Element) {
+		const rect = element.getBoundingClientRect();
+		return {
+			left: rect.left + window.scrollX,
+			top: rect.top + window.scrollY
+		};
+	}
 
 	function openSidePanel(data: RecipeProgressData) {
 		selectedData = data;
@@ -143,7 +166,7 @@
 				>
 				<td class="border border-slate-500 p-3"
 					>{#if progressData.isUnlocked}
-						<a class="recipe-link flex w-fit gap-2" target="_blank" href={mcWikiLink(progressData.result)}
+						<a class="result-link flex w-fit gap-2" target="_blank" href={mcWikiLink(progressData.result)}
 							>{progressData.result.split('_').join(' ')} <ion-icon class="invisible pt-1" name="open-outline"></ion-icon></a
 						>
 					{/if}</td
@@ -182,10 +205,10 @@
 	</tbody>
 </table>
 
-<RecipePanel bind:isChecked={isSidePanelOpen} data={selectedData}></RecipePanel>
+<RecipePanel bind:isChecked={isSidePanelOpen} bind:scrollToElementName data={selectedData}></RecipePanel>
 
 <style>
-	.recipe-link {
+	.recipe-link, .result-link {
 		&:hover ion-icon {
 			visibility: inherit;
 		}
