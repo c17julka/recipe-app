@@ -10,7 +10,7 @@
 </script>
 
 <div class="flex h-full">
-	<div class:-translate-x-0={isChecked} class=" fixed inset-y-0 right-0 h-full w-1/4 translate-x-full transform bg-white transition-all duration-300">
+	<div class:-translate-x-0={isChecked && data} class=" fixed inset-y-0 right-0 h-full w-1/4 translate-x-full transform bg-white transition-all duration-300">
 		<button class="m-4" type="button" aria-label="Close panel" onclick={() => (isChecked = false)}>
 			<ion-icon class="visible fill-slate-900 text-3xl" name="close"> </ion-icon>
 		</button>
