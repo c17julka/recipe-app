@@ -2,10 +2,23 @@
 	import type { PageProps } from './$types';
 	import { page } from '$app/state';
 	import type { RecipeProgressData } from '../types/types';
+	import RecipePanel from './components/RecipePanel.svelte';
+	import { onDestroy } from 'svelte';
+	('./components/RecipePanel.svelte');
 
 	let { data }: PageProps = $props();
 
 	let modifiedData: RecipeProgressData[] = $state([]);
+	const mcWikiLink = (recipe: string) => `https://minecraft.wiki/w/Special:Search?search${recipe}`;
+
+	let isSidePanelOpen = $state(false);
+	let selectedData: RecipeProgressData | undefined = $state(undefined);
+
+	function openSidePanel(data: RecipeProgressData) {
+		console.log(isSidePanelOpen);
+		selectedData = data;
+		isSidePanelOpen = true;
+	}
 
 	// async function favourite(progressData: RecipeProgressData, isFavourite: boolean) {
 	// progressData.meta.favourite = isFavourite;
@@ -63,6 +76,20 @@
 	$effect(() => {
 		modifiedData = data.recipeProgressData;
 	});
+
+	function getRelatedRecipesButtonColor(progressData: RecipeProgressData): string {
+		const relatedLockedRecipesAmount = progressData.meta.relatedLockedRecipesAmount;
+
+		if (!relatedLockedRecipesAmount || relatedLockedRecipesAmount === 0) {
+			return 'bg-slate-600/50';
+		} else if (relatedLockedRecipesAmount <= 3) {
+			return 'bg-violet-500/30';
+		} else if (relatedLockedRecipesAmount <= 10) {
+			return 'bg-violet-600/50';
+		} else {
+			return 'bg-violet-600';
+		}
+	}
 </script>
 
 <h1>Recipes unlocked: {modifiedData.filter((recipe) => recipe.isUnlocked).length}/{modifiedData.length}</h1>
@@ -75,6 +102,7 @@
 			<th class="border border-slate-500 p-3">Recipe</th>
 			<th class="border border-slate-500 p-3">Item</th>
 			<th class=" w-1/12 border border-slate-500 p-3">Is craftable</th>
+			<th class=" w-1/12 border border-slate-500 p-3">Related locked recipes</th>
 			<!-- <th class=" w-1/12 border border-slate-500 p-3"></th> -->
 		</tr>
 	</thead>
@@ -85,26 +113,40 @@
 					<td class="border border-slate-500 p-3">{progressData.type.split('_').join(' ')}</td>
 				{/if}
 				<td class="border border-slate-500 p-3">
-					<a target="_blank" href="https://minecraft.wiki/w/Special:Search?search={progressData.craftingRecipeName}"
-						>{progressData.craftingRecipeName.split('_').join(' ')}</a
+					<a class="recipe-link flex gap-2 w-fit" target="_blank" href={mcWikiLink(progressData.craftingRecipeName)}
+						>{progressData.craftingRecipeName.split('_').join(' ')} <ion-icon class="invisible pt-1" name="open-outline"></ion-icon></a
 					></td
 				>
 				<td class="border border-slate-500 p-3"
 					>{#if progressData.isUnlocked}
-						<a target="_blank" href="https://minecraft.wiki/w/Special:Search?search={progressData.result}"
-							>{progressData.result.split('_').join(' ')}</a
+						<a class="recipe-link flex gap-2 w-fit" target="_blank" href={mcWikiLink(progressData.result)}
+							>{progressData.result.split('_').join(' ')} <ion-icon class="invisible pt-1" name="open-outline"></ion-icon></a
 						>
 					{/if}</td
 				>
 				<td class="border border-slate-500 p-3">
-					{#if progressData.meta.isCraftable}
-						<ion-icon class="w-full fill-teal-500" name="checkbox"></ion-icon>
-					{:else if progressData.meta.isCraftable === false}
-						<ion-icon class="w-full fill-rose-500" name="close-circle"></ion-icon>
-					{:else}
-						<ion-icon class="w-full fill-slate-400" name="help-circle"></ion-icon>
-					{/if}</td
-				>
+					<div class="flex w-full justify-center text-3xl">
+						{#if progressData.meta.isCraftable}
+							<ion-icon class="fill-teal-500 " name="checkbox"></ion-icon>
+						{:else if progressData.meta.isCraftable === false}
+							<ion-icon class="fill-rose-500 " name="close-circle"></ion-icon>
+						{:else}
+							<ion-icon class="fill-slate-400 " name="help-circle"></ion-icon>
+						{/if}
+					</div>
+				</td>
+				<td class="border border-slate-500 p-3 font-bold">
+					<div class="flex w-full justify-center">
+						{#if progressData.isUnlocked}
+							<button
+								class="rounded-full px-3 py-1 {getRelatedRecipesButtonColor(progressData)}"
+								onclick={() => openSidePanel(progressData)}
+							>
+								{progressData.meta.relatedLockedRecipesAmount}
+							</button>
+						{/if}
+					</div>
+				</td>
 				<!-- <td class="border border-slate-500 p-3">
 					<button class="w-full" aria-label="Favourite" onclick={() => favourite(progressData, !progressData.meta.favourite)}>
 						{#if progressData.meta.favourite}
@@ -119,8 +161,12 @@
 	</tbody>
 </table>
 
+<RecipePanel bind:isChecked={isSidePanelOpen} data={selectedData}></RecipePanel>
+
 <style>
-	ion-icon {
-		font-size: 30px;
+	.recipe-link {
+		&:hover ion-icon {
+			visibility: inherit;
+		}
 	}
 </style>

@@ -7,7 +7,6 @@ export async function load({ params }): Promise<{ recipeProgressData: RecipeProg
 	if (!isValidSlug(params.slug)) {
 		throw new Error(`Recipe type ${params.slug} not found.`);
 	}
-
 	// const favouritesCookieData = cookie.get('favourites');
 	const recipeProgress = await getRecipeProgress();
 	const recipeProgressDataFromSlug = extractProgressDataFromSlug(params.slug, recipeProgress);
@@ -19,17 +18,24 @@ export async function load({ params }): Promise<{ recipeProgressData: RecipeProg
 }
 
 function extractProgressDataWithMeta(progressData: RecipeProgressData[]): RecipeProgressData[] {
-	const unlockedRecipeResults = progressData.filter((data) => data.isUnlocked).map((data) => data.result);
-	const lockedRecipeResults = progressData.filter((data) => !data.isUnlocked).map((data) => data.result);
+	const unlockedRecipes = progressData.filter((data) => data.isUnlocked);
+	const lockedRecipes = progressData.filter((data) => !data.isUnlocked);
+
+	const unlockedRecipeResults = unlockedRecipes.map((data) => data.result);
+	const lockedRecipeResults = lockedRecipes.map((data) => data.result);
 
 	const progressDataWithMeta = progressData.map((data) => {
 		const isCraftable = extractIsCraftableMetaData(data, unlockedRecipeResults, lockedRecipeResults);
+		const relatedLockedRecipes = extractRelatedLockedRecipesMetaData(data, lockedRecipes);
+		const relatedLockedRecipesAmount = relatedLockedRecipes.length;
 
 		return {
 			...data,
 			meta: {
 				...data.meta,
-				isCraftable: isCraftable
+				isCraftable: isCraftable,
+				relatedLockedRecipesAmount: relatedLockedRecipesAmount,
+				relatedLockedRecipes: relatedLockedRecipes
 			}
 		};
 	});
@@ -56,6 +62,16 @@ function extractIsCraftableMetaData(data: RecipeProgressData, unlockedRecipeResu
 	const isItemsCraftable = isRequiredItemsCraftable && isOptionalItemsCraftable;
 
 	return !isItemsCraftable ? null : isRecipeCraftable;
+}
+
+function extractRelatedLockedRecipesMetaData(data: RecipeProgressData, lockedRecipeResults: RecipeProgressData[]): RecipeProgressData[] {
+	const relatedLockedRecipes = lockedRecipeResults.filter((recipe) => {
+		const requiredItems = recipe.recipeIngredients.requiredItems;
+		const optionalItems = recipe.recipeIngredients.optionalItems;
+		const hasItems = requiredItems.includes(data.result) ?? optionalItems.includes(data.result);
+		return hasItems;
+	});
+	return relatedLockedRecipes;
 }
 
 function extractProgressDataFromSlug(slug: string, recipeProgressData: RecipeProgressData[]): RecipeProgressData[] {

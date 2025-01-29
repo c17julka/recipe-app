@@ -7,7 +7,7 @@
 </script>
 
 <div class="container mx-8">
-	<nav class="my-8" >
+	<nav class="my-8">
 		<ol class="flex flex-nowrap gap-4">
 			{#each SLUG_TYPES as slug}
 				<li>

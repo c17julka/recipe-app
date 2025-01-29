@@ -15,6 +15,8 @@ export interface RecipeProgressData {
 	meta: {
 		favourite?: boolean;
 		isCraftable?: boolean | null;
+		relatedLockedRecipesAmount?: number;
+		relatedLockedRecipes?: RecipeProgressData[];
 	};
 }
 
