@@ -8,7 +8,7 @@
 
 	const mcWikiLink = (recipe: string) => `https://minecraft.wiki/w/Special:Search?search${recipe}`;
 
-	let isSidePanelOpen = $state(true);
+	let isSidePanelOpen = $state(false);
 	let selectedData: RecipeProgressData | undefined = $state(undefined);
 
 	let scrollToElementName: string | undefined = $state(undefined);
@@ -18,15 +18,12 @@
 		if (!elementName) {
 			return;
 		}
-		const element = document.querySelector(`a[href='${mcWikiLink(elementName)}'].recipe-link`);
-
-        if (!element) {
+		const element = document.querySelector(`a[href='${mcWikiLink(elementName)}'].recipe-link`) as HTMLElement;
+        const parentRow = element?.closest('tr');
+        if (!parentRow) {
             return
         }
-		scrollTo({
-			behavior: 'auto',
-			top: getOffset(element).top
-		});
+        parentRow.focus();
 	});
 
 	$effect(() => {
@@ -54,13 +51,6 @@
 		return recipeData;
 	}
 
-	function getOffset(element: Element) {
-		const rect = element.getBoundingClientRect();
-		return {
-			left: rect.left + window.scrollX,
-			top: rect.top + window.scrollY
-		};
-	}
 
 	function openSidePanel(data: RecipeProgressData) {
 		selectedData = data;
@@ -155,7 +145,8 @@
 	</thead>
 	<tbody>
 		{#each data as progressData}
-			<tr class="bg-slate-800">
+        <!-- TODO: give classes async -->
+			<tr tabindex="0" class="bg-slate-800 focus:border-2 focus:border-purple-500">
 				{#if page.params.slug === 'all'}
 					<td class="border border-slate-500 p-3">{progressData.type.split('_').join(' ')}</td>
 				{/if}
