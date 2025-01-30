@@ -16,14 +16,15 @@
 
 <div class="flex h-full">
 	<div
+        class="resize fixed inset-y-0 right-0 h-full w-1/4 transform bg-white transition-all duration-300 overflow-auto"
 		class:-translate-x-0={isChecked && data}
-		class=" fixed inset-y-0 right-0 h-full w-1/4 translate-x-full transform bg-white transition-all duration-300"
+        class:translate-x-full={!isChecked || !data}
 	>
-		<button class="m-4" type="button" aria-label="Close panel" onclick={() => (isChecked = false)}>
+		<button class="m-3" type="button" aria-label="Close panel" onclick={() => (isChecked = false)}>
 			<ion-icon class="visible fill-slate-900 text-3xl" name="close"> </ion-icon>
 		</button>
-		<div class="mx-12 flex flex-col text-4xl text-slate-900">
-			<h1 class="my-1 font-semibold">{data?.craftingRecipeName.split('_').join(' ')}</h1>
+		<div class="mx-12 mb-6 flex flex-col text-4xl text-slate-900">
+			<h1 class="mb-1 font-semibold">{data?.craftingRecipeName.split('_').join(' ')}</h1>
 			<div class="align-center mb-8 flex text-4xl">
 				<ion-icon class="visible mt-1.5" name="arrow-forward-outline"></ion-icon>
 				<h1 class="font-semibold">{data?.result.split('_').join(' ')}</h1>
