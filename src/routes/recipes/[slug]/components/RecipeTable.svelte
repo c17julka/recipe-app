@@ -6,7 +6,7 @@
 
 	let { data }: { data: RecipeProgressData[] } = $props();
 
-	const mcWikiLink = (recipe: string) => `https://minecraft.wiki/w/Special:Search?search${recipe}`;
+	const mcWikiLink = (recipe: string) => `https://minecraft.wiki/w/Special:Search?search=${recipe}`;
 
 	let isSidePanelOpen = $state(false);
 	let selectedData: RecipeProgressData | undefined = $state(undefined);
