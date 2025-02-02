@@ -57,6 +57,10 @@
 		isSidePanelOpen = true;
 	}
 
+	function separateByFrom(value: string): string {
+		return value.split('_from_')[0];
+	}
+
 	// async function favourite(progressData: RecipeProgressData, isFavourite: boolean) {
 	// progressData.meta.favourite = isFavourite;
 	// data = data.sort((first, second) => {
@@ -151,7 +155,7 @@
 					<td class="border border-slate-500 p-3">{progressData.type.split('_').join(' ')}</td>
 				{/if}
 				<td class="border border-slate-500 p-3">
-					<a class="recipe-link flex w-fit gap-2" target="_blank" href={mcWikiLink(progressData.craftingRecipeName)}
+					<a class="recipe-link flex w-fit gap-2" target="_blank" href={mcWikiLink(separateByFrom(progressData.craftingRecipeName))}
 						>{progressData.craftingRecipeName.split('_').join(' ')}
 						<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="invisible w-4 fill-white">
 							{@html EXTERNAL_LINK_ICON_PATH}
@@ -160,7 +164,7 @@
 				>
 				<td class="border border-slate-500 p-3"
 					>{#if progressData.isUnlocked}
-						<a class="result-link flex w-fit gap-2" target="_blank" href={mcWikiLink(progressData.result)}
+						<a class="result-link flex w-fit gap-2" target="_blank" href={mcWikiLink(separateByFrom(progressData.craftingRecipeName))}
 							>{progressData.result.split('_').join(' ')}
 							<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="invisible w-4 fill-white">
 								{@html EXTERNAL_LINK_ICON_PATH}
