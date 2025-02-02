@@ -4,7 +4,7 @@
 	import type { RecipeProgressData } from '../../types/types';
 	import RecipePanel from './../components/RecipePanel.svelte';
 	import { CHECKMARK_ICON_PATH, CLOSE_ICON_PATH, EXTERNAL_LINK_ICON_PATH, HELP_ICON_PATH } from '../../../../../static/icons/icons';
-	import { splitByUnderscore } from '../../../utils';
+	import { getCookie, IS_SIDE_PANEL_OPEN_COOKIE_NAME, SELECTED_DATA_COOKIE_NAME, setCookie, splitByUnderscore } from '../../../utils';
 
 	let { data }: { data: RecipeProgressData[] } = $props();
 
@@ -30,27 +30,27 @@
 
 	$effect(() => {
 		const selectedDataRecipeName = selectedData?.craftingRecipeName;
-		const selectedDataCookieValue = document.cookie
-			.split('; ')
-			.find((row) => row.startsWith('selectedData='))
-			?.split('=')[1];
-
-		if (selectedDataRecipeName && selectedDataCookieValue) {
-			document.cookie = document.cookie.replace(`selectedData=${selectedDataCookieValue}`, `selectedData=${selectedDataRecipeName}`);
-		} else if (selectedDataRecipeName) {
-			document.cookie = `selectedData=${selectedDataRecipeName}`;
-		} else {
-			document.cookie = ``;
+		if (!selectedDataRecipeName) {
+			return;
 		}
+		setCookie(selectedDataRecipeName, SELECTED_DATA_COOKIE_NAME);
+	});
+
+	$effect(() => {
+		const isSidePanelOpenValue = isSidePanelOpen;
+
+		setCookie(isSidePanelOpenValue.toString(), IS_SIDE_PANEL_OPEN_COOKIE_NAME);
 	});
 
 	function getSelectedData(): RecipeProgressData | undefined {
-		const selectedDataCookieValue = document.cookie
-			.split('; ')
-			.find((row) => row.startsWith('selectedData='))
-			?.split('=')[1];
+		const selectedDataCookieValue = getCookie(SELECTED_DATA_COOKIE_NAME);
 		const recipeData = data.find((recipe) => recipe.craftingRecipeName === selectedDataCookieValue);
 		return recipeData;
+	}
+
+	function getIsSidePanelOpen() {
+		const isSidePanelOpenValue = getCookie(IS_SIDE_PANEL_OPEN_COOKIE_NAME);
+		return isSidePanelOpenValue === 'true';
 	}
 
 	function openSidePanel(data: RecipeProgressData) {
@@ -131,6 +131,7 @@
 
 	onMount(() => {
 		selectedData = getSelectedData();
+		isSidePanelOpen = getIsSidePanelOpen();
 		window.onanimationiteration = console.log;
 	});
 </script>
