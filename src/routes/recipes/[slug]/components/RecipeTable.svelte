@@ -135,7 +135,7 @@
 </script>
 
 <h1>Recipes unlocked: {data.filter((recipe) => recipe.isUnlocked).length}/{data.length}</h1>
-<table class="my-8 w-full table-fixed overflow-scroll text-left font-sans text-slate-300">
+<table class="mb-8 mt-4 w-3/4 table-auto overflow-scroll text-left font-sans text-slate-300">
 	<thead class="bg-slate-700">
 		<tr>
 			{#if page.params.slug === 'all'}

@@ -6,12 +6,12 @@
 	let { children } = $props();
 </script>
 
-<div class="container mx-8">
-	<nav class="my-8">
-		<ol class="flex flex-nowrap gap-4">
+<div class="w-[95vw] px-8">
+	<nav class="my-5 w-4/6">
+		<ol class="flex flex-wrap gap-4">
 			{#each SLUG_TYPES as slug}
-				<li>
-					<a class="rounded bg-slate-800 px-4 py-2 font-medium" class:bg-teal-800={page.params.slug === slug} href="/recipes/{slug}">{slug}</a>
+				<li class="rounded bg-slate-800 px-4 py-2 font-medium" class:bg-teal-800={page.params.slug === slug}>
+					<a href="/recipes/{slug}">{slug}</a>
 				</li>
 			{/each}
 		</ol>
