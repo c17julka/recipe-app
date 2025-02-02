@@ -3,6 +3,7 @@
 	import { onMount } from 'svelte';
 	import type { RecipeProgressData } from '../../types/types';
 	import RecipePanel from './../components/RecipePanel.svelte';
+	import { CHECKMARK_ICON_PATH, CLOSE_ICON_PATH, EXTERNAL_LINK_ICON_PATH, HELP_ICON_PATH } from '../../../../../static/icons/icons';
 
 	let { data }: { data: RecipeProgressData[] } = $props();
 
@@ -13,17 +14,17 @@
 
 	let scrollToElementName: string | undefined = $state(undefined);
 
-    $effect(() => {
+	$effect(() => {
 		const elementName = scrollToElementName;
 		if (!elementName) {
 			return;
 		}
 		const element = document.querySelector(`a[href='${mcWikiLink(elementName)}'].recipe-link`) as HTMLElement;
-        const parentRow = element?.closest('tr');
-        if (!parentRow) {
-            return
-        }
-        parentRow.focus();
+		const parentRow = element?.closest('tr');
+		if (!parentRow) {
+			return;
+		}
+		parentRow.focus();
 	});
 
 	$effect(() => {
@@ -50,7 +51,6 @@
 		const recipeData = data.find((recipe) => recipe.craftingRecipeName === selectedDataCookieValue);
 		return recipeData;
 	}
-
 
 	function openSidePanel(data: RecipeProgressData) {
 		selectedData = data;
@@ -126,6 +126,7 @@
 
 	onMount(() => {
 		selectedData = getSelectedData();
+		window.onanimationiteration = console.log;
 	});
 </script>
 
@@ -145,31 +146,42 @@
 	</thead>
 	<tbody>
 		{#each data as progressData}
-        <!-- TODO: give classes async -->
 			<tr tabindex="0" class="bg-slate-800 focus:border-2 focus:border-purple-500">
 				{#if page.params.slug === 'all'}
 					<td class="border border-slate-500 p-3">{progressData.type.split('_').join(' ')}</td>
 				{/if}
 				<td class="border border-slate-500 p-3">
 					<a class="recipe-link flex w-fit gap-2" target="_blank" href={mcWikiLink(progressData.craftingRecipeName)}
-						>{progressData.craftingRecipeName.split('_').join(' ')} <ion-icon class="invisible pt-1" name="open-outline"></ion-icon></a
-					></td
+						>{progressData.craftingRecipeName.split('_').join(' ')}
+						<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="invisible w-4 fill-white">
+							{@html EXTERNAL_LINK_ICON_PATH}
+						</svg>
+					</a></td
 				>
 				<td class="border border-slate-500 p-3"
 					>{#if progressData.isUnlocked}
 						<a class="result-link flex w-fit gap-2" target="_blank" href={mcWikiLink(progressData.result)}
-							>{progressData.result.split('_').join(' ')} <ion-icon class="invisible pt-1" name="open-outline"></ion-icon></a
-						>
+							>{progressData.result.split('_').join(' ')}
+							<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="invisible w-4 fill-white">
+								{@html EXTERNAL_LINK_ICON_PATH}
+							</svg>
+						</a>
 					{/if}</td
 				>
 				<td class="border border-slate-500 p-3">
 					<div class="flex w-full justify-center text-3xl">
 						{#if progressData.meta.isCraftable}
-							<ion-icon class="visible fill-teal-500" name="checkbox"></ion-icon>
+							<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="w-9 fill-teal-500">
+								{@html CHECKMARK_ICON_PATH}
+							</svg>
 						{:else if progressData.meta.isCraftable === false}
-							<ion-icon class="visible fill-rose-500" name="close-circle"></ion-icon>
+							<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="w-9 fill-rose-500">
+								{@html CLOSE_ICON_PATH}
+							</svg>
 						{:else}
-							<ion-icon class="visible fill-slate-400" name="help-circle"></ion-icon>
+							<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="w-9 fill-slate-400">
+								{@html HELP_ICON_PATH}
+							</svg>
 						{/if}
 					</div>
 				</td>
@@ -199,9 +211,10 @@
 <RecipePanel bind:isChecked={isSidePanelOpen} bind:scrollToElementName data={selectedData}></RecipePanel>
 
 <style>
-	.recipe-link, .result-link {
-		&:hover ion-icon {
-			visibility: inherit;
+	.recipe-link,
+	.result-link {
+		&:hover svg {
+			visibility: visible;
 		}
 	}
 </style>

@@ -1,7 +1,7 @@
-import type { ExtendedRecipe, RecipeProgressData, RecipeAdvancement, RecipeIngredients } from '../types/types';
-import type { Advancement as Advancements } from '../types/advancements-data-input';
 import { isValidRecipeType, isValidSlug } from '../../utils';
+import type { Advancement as Advancements } from '../types/advancements-data-input';
 import type { ItemGroup } from '../types/recipe-data-input';
+import type { ExtendedRecipe, RecipeAdvancement, RecipeIngredients, RecipeProgressData } from '../types/types';
 
 export async function load({ params }): Promise<{ recipeProgressData: RecipeProgressData[] }> {
 	if (!isValidSlug(params.slug)) {
@@ -105,7 +105,7 @@ async function loadAllCondensedRecipes(): Promise<ExtendedRecipe[]> {
 }
 
 async function loadAllUnlockedAdvancements(): Promise<Advancements> {
-	const modules = import.meta.glob(`/../minecraft random PART THREE OPMG/world/advancements/*.json`);
+	const modules = import.meta.glob(`/../users/*.json`);
 	const paths = Object.keys(modules);
 	const advancements: Advancements[] = await Promise.all(
 		paths.map(async (path) => {

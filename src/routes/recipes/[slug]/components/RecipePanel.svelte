@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { ARROW_DOWN_TURN_RIGHT, CLOSE_OUTLINE_ICON_PATH } from '../../../../../static/icons/icons';
 	import type { RecipeProgressData } from '../../types/types';
 
 	interface InputProps {
@@ -8,32 +9,36 @@
 	}
 
 	function setScrolledToElementName(name: string) {
-		scrollToElementName = name
+		scrollToElementName = name;
 	}
 
-	let { isChecked = $bindable(),scrollToElementName = $bindable(), data }: InputProps = $props();
+	let { isChecked = $bindable(), scrollToElementName = $bindable(), data }: InputProps = $props();
 </script>
 
 <div class="flex h-full">
 	<div
-        class="resize fixed inset-y-0 right-0 h-full w-1/4 transform bg-white transition-all duration-300 overflow-auto"
+		class="fixed inset-y-0 right-0 h-full w-1/4 transform resize overflow-auto bg-white transition-all duration-300"
 		class:-translate-x-0={isChecked && data}
-        class:translate-x-full={!isChecked || !data}
+		class:translate-x-full={!isChecked || !data}
 	>
 		<button class="m-3" type="button" aria-label="Close panel" onclick={() => (isChecked = false)}>
-			<ion-icon class="visible fill-slate-900 text-3xl" name="close"> </ion-icon>
+			<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="visible w-8 stroke-slate-900 stroke-2">
+				{@html CLOSE_OUTLINE_ICON_PATH}
+			</svg>
 		</button>
 		<div class="mx-12 mb-6 flex flex-col text-4xl text-slate-900">
 			<h1 class="mb-1 font-semibold">{data?.craftingRecipeName.split('_').join(' ')}</h1>
 			<div class="align-center mb-8 flex text-4xl">
-				<ion-icon class="visible mt-1.5" name="arrow-forward-outline"></ion-icon>
+				<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" class="visible w-8 stroke-slate-900 stroke-2">
+					{@html ARROW_DOWN_TURN_RIGHT}
+				</svg>
 				<h1 class="font-semibold">{data?.result.split('_').join(' ')}</h1>
 			</div>
 			{#if data?.meta.relatedLockedRecipesAmount}
 				<h2 class="text-2xl font-semibold">Result used in:</h2>
 				<ul class="ml-5 list-disc text-lg font-semibold text-slate-500">
 					{#each data?.meta.relatedLockedRecipes ?? [] as relatedRecipe}
-						<li class="cursor-pointer w-fit hover:text-slate-900" onclick={() => setScrolledToElementName(relatedRecipe.craftingRecipeName)}>
+						<li class="w-fit cursor-pointer hover:text-slate-900" onclick={() => setScrolledToElementName(relatedRecipe.craftingRecipeName)}>
 							{relatedRecipe.craftingRecipeName.split('_').join(' ')}
 						</li>
 					{/each}
