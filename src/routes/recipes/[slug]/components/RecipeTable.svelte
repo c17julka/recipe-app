@@ -4,6 +4,7 @@
 	import type { RecipeProgressData } from '../../types/types';
 	import RecipePanel from './../components/RecipePanel.svelte';
 	import { CHECKMARK_ICON_PATH, CLOSE_ICON_PATH, EXTERNAL_LINK_ICON_PATH, HELP_ICON_PATH } from '../../../../../static/icons/icons';
+	import { splitByUnderscore } from '../../../utils';
 
 	let { data }: { data: RecipeProgressData[] } = $props();
 
@@ -152,11 +153,11 @@
 		{#each data as progressData}
 			<tr tabindex="0" class="bg-slate-800 focus:border-2 focus:border-purple-500">
 				{#if page.params.slug === 'all'}
-					<td class="border border-slate-500 p-3">{progressData.type.split('_').join(' ')}</td>
+					<td class="border border-slate-500 p-3">{splitByUnderscore(progressData.type)}</td>
 				{/if}
 				<td class="border border-slate-500 p-3">
 					<a class="recipe-link flex w-fit gap-2" target="_blank" href={mcWikiLink(separateByFrom(progressData.craftingRecipeName))}
-						>{progressData.craftingRecipeName.split('_').join(' ')}
+						>{splitByUnderscore(progressData.craftingRecipeName)}
 						<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="invisible w-4 fill-white">
 							{@html EXTERNAL_LINK_ICON_PATH}
 						</svg>
@@ -165,7 +166,7 @@
 				<td class="border border-slate-500 p-3"
 					>{#if progressData.isUnlocked}
 						<a class="result-link flex w-fit gap-2" target="_blank" href={mcWikiLink(separateByFrom(progressData.craftingRecipeName))}
-							>{progressData.result.split('_').join(' ')}
+							>{splitByUnderscore(progressData.result)}
 							<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="invisible w-4 fill-white">
 								{@html EXTERNAL_LINK_ICON_PATH}
 							</svg>

@@ -17,3 +17,7 @@ export function isValidSlug(value: unknown): value is SlugType {
 	}
 	return false;
 }
+
+export function splitByUnderscore(value: string | undefined): string | undefined {
+	return value?.split('_').join(' ');
+}
