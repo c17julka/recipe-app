@@ -4,7 +4,7 @@
 	import type { RecipeProgressData } from '../../types/types';
 
 	interface InputProps {
-		isChecked: boolean;
+		isChecked: boolean | undefined;
 		data: RecipeProgressData | undefined;
 		scrollToElementName: string | undefined;
 	}

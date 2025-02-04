@@ -4,15 +4,23 @@
 	import type { RecipeProgressData } from '../../types/types';
 	import RecipePanel from './../components/RecipePanel.svelte';
 	import { CHECKMARK_ICON_PATH, CLOSE_ICON_PATH, EXTERNAL_LINK_ICON_PATH, HELP_ICON_PATH } from '../../../../../static/icons/icons';
-	import { getCookie, IS_SIDE_PANEL_OPEN_COOKIE_NAME, SELECTED_DATA_COOKIE_NAME, setCookie, splitByUnderscore } from '../../../utils';
+	import {
+		FOCUSED_TABLE_ROW_COOKIE_NAME,
+		getCookie,
+		IS_SIDE_PANEL_OPEN_COOKIE_NAME,
+		SELECTED_DATA_COOKIE_NAME,
+		setCookie,
+		splitByFrom,
+		splitByUnderscore
+	} from '../../../utils';
+	import type { FocusEventHandler } from 'svelte/elements';
 
 	let { data }: { data: RecipeProgressData[] } = $props();
 
 	const mcWikiLink = (recipe: string) => `https://minecraft.wiki/w/Special:Search?search=${recipe}`;
 
-	let isSidePanelOpen = $state(false);
+	let isSidePanelOpen: boolean | undefined = $state(undefined);
 	let selectedData: RecipeProgressData | undefined = $state(undefined);
-
 	let scrollToElementName: string | undefined = $state(undefined);
 
 	$effect(() => {
@@ -20,12 +28,13 @@
 		if (!elementName) {
 			return;
 		}
-		const element = document.querySelector(`a[href='${mcWikiLink(elementName)}'].recipe-link`) as HTMLElement;
-		const parentRow = element?.closest('tr');
-		if (!parentRow) {
+		setCookie(elementName, FOCUSED_TABLE_ROW_COOKIE_NAME);
+		const tableRowElement = getFocusableTableRowElement(elementName);
+
+		if (!tableRowElement) {
 			return;
 		}
-		parentRow.focus();
+		tableRowElement.focus();
 	});
 
 	$effect(() => {
@@ -34,12 +43,13 @@
 			return;
 		}
 		setCookie(selectedDataRecipeName, SELECTED_DATA_COOKIE_NAME);
-		console.log(document.cookie);
 	});
 
 	$effect(() => {
 		const isSidePanelOpenValue = isSidePanelOpen;
-
+		if (isSidePanelOpenValue === undefined) {
+			return;
+		}
 		setCookie(isSidePanelOpenValue.toString(), IS_SIDE_PANEL_OPEN_COOKIE_NAME);
 	});
 
@@ -59,8 +69,35 @@
 		isSidePanelOpen = true;
 	}
 
-	function separateByFrom(value: string): string {
-		return value.split('_from_')[0];
+	function handleFocusEvent(craftingRecipeName: string): void {
+		setCookie(craftingRecipeName, FOCUSED_TABLE_ROW_COOKIE_NAME);
+		return undefined;
+	}
+
+	function getFocusableTableRowElement(elementName: string): HTMLElement | undefined {
+		const elementNameShortened = splitByFrom(elementName);
+		const elements = document.querySelectorAll<HTMLElement>(`a[href='${mcWikiLink(elementNameShortened)}'].recipe-link`);
+		if (!elements.length) {
+			return undefined;
+		}
+
+		if (elements.length === 1) {
+			const parentRow = elements[0].closest('tr');
+			if (!parentRow) {
+				return;
+			}
+			return parentRow;
+		}
+
+		const findElementByInnerText = elements.values().find((element) => element.innerText === splitByUnderscore(elementName));
+		if (!findElementByInnerText) {
+			return undefined;
+		}
+		const parentRow = findElementByInnerText.closest('tr');
+		if (!parentRow) {
+			return undefined;
+		}
+		return parentRow;
 	}
 
 	// async function favourite(progressData: RecipeProgressData, isFavourite: boolean) {
@@ -133,6 +170,7 @@
 	onMount(() => {
 		selectedData = getSelectedData();
 		isSidePanelOpen = getIsSidePanelOpen();
+		scrollToElementName = getCookie(FOCUSED_TABLE_ROW_COOKIE_NAME);
 	});
 </script>
 
@@ -152,12 +190,16 @@
 	</thead>
 	<tbody>
 		{#each data as progressData}
-			<tr tabindex="0" class="bg-slate-800 focus:border-2 focus:border-purple-500">
+			<tr
+				tabindex="0"
+				class="focus:outline-solid bg-slate-800 focus:outline-2 focus:outline-purple-500 focus-visible:outline-2 focus-visible:outline-purple-500"
+				onfocus={() => handleFocusEvent(progressData.craftingRecipeName)}
+			>
 				{#if page.params.slug === 'all'}
 					<td class="border border-slate-500 p-2">{splitByUnderscore(progressData.type)}</td>
 				{/if}
 				<td class="border border-slate-500 p-2">
-					<a class="recipe-link flex w-fit gap-2" target="_blank" href={mcWikiLink(separateByFrom(progressData.craftingRecipeName))}
+					<a class="recipe-link flex w-fit gap-2" target="_blank" href={mcWikiLink(splitByFrom(progressData.craftingRecipeName))}
 						>{splitByUnderscore(progressData.craftingRecipeName)}
 						<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="invisible w-4 fill-white">
 							{@html EXTERNAL_LINK_ICON_PATH}
@@ -166,7 +208,7 @@
 				>
 				<td class="border border-slate-500 p-2"
 					>{#if progressData.isUnlocked}
-						<a class="result-link flex w-fit gap-2" target="_blank" href={mcWikiLink(separateByFrom(progressData.result))}
+						<a class="result-link flex w-fit gap-2" target="_blank" href={mcWikiLink(splitByFrom(progressData.result))}
 							>{splitByUnderscore(progressData.result)}
 							<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="invisible w-4 fill-white">
 								{@html EXTERNAL_LINK_ICON_PATH}

@@ -2,6 +2,7 @@ import { RECIPE_TYPES, SLUG_TYPES, type RecipeType, type SlugType } from './type
 
 export const SELECTED_DATA_COOKIE_NAME = 'selectedData';
 export const IS_SIDE_PANEL_OPEN_COOKIE_NAME = 'isSidePanelOpen';
+export const FOCUSED_TABLE_ROW_COOKIE_NAME = 'focusedTableRow';
 
 export function isValidRecipeType(value: unknown): value is RecipeType {
 	for (const recipe of RECIPE_TYPES) {
@@ -25,25 +26,22 @@ export function splitByUnderscore(value: string | undefined): string | undefined
 	return value?.split('_').join(' ');
 }
 
-export function setCookie(newValue: string, cookieName: string): void {
-	const cookieValue = document.cookie
-		.split('; ')
-		.find((row) => row.startsWith(`${cookieName}=`))
-		?.split('=')[1];
-
-	if (newValue && cookieValue) {
-		document.cookie = document.cookie.replace(`${cookieName}=${cookieValue}`, `${cookieName}=${newValue}`);
-	} else if (newValue) {
-		document.cookie = `${cookieName}=${newValue}`;
-	} else {
-		document.cookie = ``;
-	}
+export function splitByFrom(value: string): string {
+	return value.split('_from_')[0];
 }
 
-export function getCookie(cookieName: string) {
+export function setCookie(newValue: string, cookieName: string): void {
+	document.cookie = `${cookieName}=${newValue};path=/;`;
+}
+
+export function getCookie(cookieName: string): string | undefined {
 	const cookieValue = document.cookie
 		.split('; ')
 		.find((row) => row.startsWith(`${cookieName}=`))
 		?.split('=')[1];
 	return cookieValue;
+}
+
+export function deleteCookie(cookieName: string): void {
+	document.cookie = `${cookieName}=; expires=Thu, 01 Jan 1970 00:00:00 UTC;`;
 }
