@@ -40,7 +40,7 @@
 				<ul class="ml-5 list-disc text-lg font-semibold text-slate-500">
 					{#each data?.meta.relatedLockedRecipes ?? [] as relatedRecipe}
 						<li class="w-fit cursor-pointer hover:text-slate-900" onclick={() => setScrolledToElementName(relatedRecipe.craftingRecipeName)}>
-							{splitByUnderscore(data?.craftingRecipeName)}
+							{splitByUnderscore(relatedRecipe.craftingRecipeName)}
 						</li>
 					{/each}
 				</ul>

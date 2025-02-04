@@ -34,6 +34,7 @@
 			return;
 		}
 		setCookie(selectedDataRecipeName, SELECTED_DATA_COOKIE_NAME);
+		console.log(document.cookie);
 	});
 
 	$effect(() => {
@@ -132,7 +133,6 @@
 	onMount(() => {
 		selectedData = getSelectedData();
 		isSidePanelOpen = getIsSidePanelOpen();
-		window.onanimationiteration = console.log;
 	});
 </script>
 
@@ -141,22 +141,22 @@
 	<thead class="bg-slate-700">
 		<tr>
 			{#if page.params.slug === 'all'}
-				<th class="w-1/6 border border-slate-500 p-3">Type</th>
+				<th class="w-1/6 border border-slate-500 p-2">Type</th>
 			{/if}
-			<th class="border border-slate-500 p-3">Recipe</th>
-			<th class="border border-slate-500 p-3">Item</th>
-			<th class=" w-1/12 border border-slate-500 p-3">Is craftable</th>
-			<th class=" w-1/12 border border-slate-500 p-3">Related locked recipes</th>
-			<!-- <th class=" w-1/12 border border-slate-500 p-3"></th> -->
+			<th class="border border-slate-500 p-2">Recipe</th>
+			<th class="border border-slate-500 p-2">Item</th>
+			<th class=" w-1/12 border border-slate-500 p-2">Is craftable</th>
+			<th class=" w-1/12 border border-slate-500 p-2">Related locked recipes</th>
+			<!-- <th class=" w-1/12 border border-slate-500 p-2"></th> -->
 		</tr>
 	</thead>
 	<tbody>
 		{#each data as progressData}
 			<tr tabindex="0" class="bg-slate-800 focus:border-2 focus:border-purple-500">
 				{#if page.params.slug === 'all'}
-					<td class="border border-slate-500 p-3">{splitByUnderscore(progressData.type)}</td>
+					<td class="border border-slate-500 p-2">{splitByUnderscore(progressData.type)}</td>
 				{/if}
-				<td class="border border-slate-500 p-3">
+				<td class="border border-slate-500 p-2">
 					<a class="recipe-link flex w-fit gap-2" target="_blank" href={mcWikiLink(separateByFrom(progressData.craftingRecipeName))}
 						>{splitByUnderscore(progressData.craftingRecipeName)}
 						<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="invisible w-4 fill-white">
@@ -164,9 +164,9 @@
 						</svg>
 					</a></td
 				>
-				<td class="border border-slate-500 p-3"
+				<td class="border border-slate-500 p-2"
 					>{#if progressData.isUnlocked}
-						<a class="result-link flex w-fit gap-2" target="_blank" href={mcWikiLink(separateByFrom(progressData.craftingRecipeName))}
+						<a class="result-link flex w-fit gap-2" target="_blank" href={mcWikiLink(separateByFrom(progressData.result))}
 							>{splitByUnderscore(progressData.result)}
 							<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="invisible w-4 fill-white">
 								{@html EXTERNAL_LINK_ICON_PATH}
@@ -174,7 +174,7 @@
 						</a>
 					{/if}</td
 				>
-				<td class="border border-slate-500 p-3">
+				<td class="border border-slate-500 p-2">
 					<div class="flex w-full justify-center text-3xl">
 						{#if progressData.meta.isCraftable}
 							<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="w-9 fill-teal-500">
@@ -191,7 +191,7 @@
 						{/if}
 					</div>
 				</td>
-				<td class="border border-slate-500 p-3 font-bold">
+				<td class="border border-slate-500 p-2 font-bold">
 					<div class="flex w-full justify-center">
 						{#if progressData.isUnlocked}
 							<button class="rounded-full px-3 py-1 {getRelatedRecipesButtonColor(progressData)}" onclick={() => openSidePanel(progressData)}>
