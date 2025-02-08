@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { ARROW_DOWN_TURN_RIGHT, CLOSE_OUTLINE_ICON_PATH } from '../../../../../static/icons/icons';
+	import { ARROW_DOWN_TURN_RIGHT, CLOSE_OUTLINE_ICON_PATH, LOCKED_PATH, UNLOCKED_PATH } from '../../../../../static/icons/icons';
 	import { splitByUnderscore } from '../../../utils';
 	import type { RecipeProgressData } from '../../types/types';
 
@@ -36,9 +36,29 @@
 				<h1 class="font-semibold">{splitByUnderscore(data?.result)}</h1>
 			</div>
 			{#if data?.meta.relatedLockedRecipesAmount}
-				<h2 class="text-2xl font-semibold">Result used in:</h2>
-				<ul class="ml-5 list-disc text-lg font-semibold text-slate-500">
+				<h2 class="flex flex-row gap-1 text-2xl font-semibold">
+					<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" class="w-5 stroke-slate-900 stroke-2 pt-1">
+						{@html LOCKED_PATH}
+					</svg>
+					Result used in locked recipes:
+				</h2>
+				<ul class="mb-6 ml-5 list-disc text-lg font-semibold text-slate-500">
 					{#each data?.meta.relatedLockedRecipes ?? [] as relatedRecipe}
+						<li class="w-fit cursor-pointer hover:text-slate-900" onclick={() => setScrolledToElementName(relatedRecipe.craftingRecipeName)}>
+							{splitByUnderscore(relatedRecipe.craftingRecipeName)}
+						</li>
+					{/each}
+				</ul>
+			{/if}
+			{#if data?.meta.relatedUnlockedRecipes?.length}
+				<h2 class="flex flex-row gap-1  text-2xl font-semibold">
+					<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" class="w-5 stroke-slate-900 stroke-2 pt-1">
+						{@html UNLOCKED_PATH}
+					</svg>
+					Result used in unlocked recipes:
+				</h2>
+				<ul class="ml-5 list-disc text-lg font-semibold text-slate-500">
+					{#each data?.meta.relatedUnlockedRecipes ?? [] as relatedRecipe}
 						<li class="w-fit cursor-pointer hover:text-slate-900" onclick={() => setScrolledToElementName(relatedRecipe.craftingRecipeName)}>
 							{splitByUnderscore(relatedRecipe.craftingRecipeName)}
 						</li>

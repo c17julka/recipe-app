@@ -17,6 +17,7 @@ export interface RecipeProgressData {
 		isCraftable?: boolean | null;
 		relatedLockedRecipesAmount?: number;
 		relatedLockedRecipes?: RecipeProgressData[];
+		relatedUnlockedRecipes?: RecipeProgressData[];
 	};
 }
 

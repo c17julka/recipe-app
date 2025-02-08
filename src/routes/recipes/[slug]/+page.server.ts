@@ -26,16 +26,16 @@ function extractProgressDataWithMeta(progressData: RecipeProgressData[]): Recipe
 
 	const progressDataWithMeta = progressData.map((data) => {
 		const isCraftable = extractIsCraftableMetaData(data, unlockedRecipeResults, lockedRecipeResults);
-		const relatedLockedRecipes = extractRelatedLockedRecipesMetaData(data, lockedRecipes);
-		const relatedLockedRecipesAmount = relatedLockedRecipes.length;
+		const { relatedLockedRecipes, relatedUnlockedRecipes } = extractRelatedRecipesMetaData(data, progressData);
 
 		return {
 			...data,
 			meta: {
 				...data.meta,
 				isCraftable: isCraftable,
-				relatedLockedRecipesAmount: relatedLockedRecipesAmount,
-				relatedLockedRecipes: relatedLockedRecipes
+				relatedLockedRecipesAmount: relatedLockedRecipes.length,
+				relatedLockedRecipes: relatedLockedRecipes,
+				relatedUnlockedRecipes: relatedUnlockedRecipes
 			}
 		};
 	});
@@ -64,14 +64,22 @@ function extractIsCraftableMetaData(data: RecipeProgressData, unlockedRecipeResu
 	return !isItemsCraftable ? null : isRecipeCraftable;
 }
 
-function extractRelatedLockedRecipesMetaData(data: RecipeProgressData, lockedRecipeResults: RecipeProgressData[]): RecipeProgressData[] {
-	const relatedLockedRecipes = lockedRecipeResults.filter((recipe) => {
+function extractRelatedRecipesMetaData(
+	data: RecipeProgressData,
+	allRecipes: RecipeProgressData[]
+): {
+	relatedLockedRecipes: RecipeProgressData[];
+	relatedUnlockedRecipes: RecipeProgressData[];
+} {
+	const relatedRecipes = allRecipes.filter((recipe) => {
 		const requiredItems = recipe.recipeIngredients.requiredItems;
 		const optionalItems = recipe.recipeIngredients.optionalItems;
 		const hasItems = requiredItems.includes(data.result) ?? optionalItems.includes(data.result);
 		return hasItems;
 	});
-	return relatedLockedRecipes;
+	const relatedLockedRecipes = relatedRecipes.filter((recipe) => !recipe.isUnlocked);
+	const relatedUnlockedRecipes = relatedRecipes.filter((recipe) => recipe.isUnlocked);
+	return { relatedLockedRecipes: relatedLockedRecipes, relatedUnlockedRecipes: relatedUnlockedRecipes };
 }
 
 function extractProgressDataFromSlug(slug: string, recipeProgressData: RecipeProgressData[]): RecipeProgressData[] {
