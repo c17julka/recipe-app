@@ -3,68 +3,101 @@
 	import { onMount } from 'svelte';
 	import type { RecipeProgressData } from '../../types/types';
 	import RecipePanel from './../components/RecipePanel.svelte';
+	import { CHECKMARK_ICON_PATH, CLOSE_ICON_PATH, EXTERNAL_LINK_ICON_PATH, HELP_ICON_PATH } from '../../../../../static/icons/icons';
+	import {
+		FOCUSED_TABLE_ROW_COOKIE_NAME,
+		getCookie,
+		IS_SIDE_PANEL_OPEN_COOKIE_NAME,
+		SELECTED_DATA_COOKIE_NAME,
+		setCookie,
+		splitByFrom,
+		splitByUnderscore
+	} from '../../../utils';
+	import type { FocusEventHandler } from 'svelte/elements';
 
 	let { data }: { data: RecipeProgressData[] } = $props();
 
-	const mcWikiLink = (recipe: string) => `https://minecraft.wiki/w/Special:Search?search${recipe}`;
+	const mcWikiLink = (recipe: string) => `https://minecraft.wiki/w/Special:Search?search=${recipe}`;
 
-	let isSidePanelOpen = $state(true);
+	let isSidePanelOpen: boolean | undefined = $state(undefined);
 	let selectedData: RecipeProgressData | undefined = $state(undefined);
-
 	let scrollToElementName: string | undefined = $state(undefined);
 
-    $effect(() => {
+	$effect(() => {
 		const elementName = scrollToElementName;
 		if (!elementName) {
 			return;
 		}
-		const element = document.querySelector(`a[href='${mcWikiLink(elementName)}'].recipe-link`);
+		setCookie(elementName, FOCUSED_TABLE_ROW_COOKIE_NAME);
+		const tableRowElement = getFocusableTableRowElement(elementName);
 
-        if (!element) {
-            return
-        }
-		scrollTo({
-			behavior: 'auto',
-			top: getOffset(element).top
-		});
+		if (!tableRowElement) {
+			return;
+		}
+		tableRowElement.focus();
 	});
 
 	$effect(() => {
 		const selectedDataRecipeName = selectedData?.craftingRecipeName;
-		const selectedDataCookieValue = document.cookie
-			.split('; ')
-			.find((row) => row.startsWith('selectedData='))
-			?.split('=')[1];
-
-		if (selectedDataRecipeName && selectedDataCookieValue) {
-			document.cookie = document.cookie.replace(`selectedData=${selectedDataCookieValue}`, `selectedData=${selectedDataRecipeName}`);
-		} else if (selectedDataRecipeName) {
-			document.cookie = `selectedData=${selectedDataRecipeName}`;
-		} else {
-			document.cookie = ``;
+		if (!selectedDataRecipeName) {
+			return;
 		}
+		setCookie(selectedDataRecipeName, SELECTED_DATA_COOKIE_NAME);
+	});
+
+	$effect(() => {
+		const isSidePanelOpenValue = isSidePanelOpen;
+		if (isSidePanelOpenValue === undefined) {
+			return;
+		}
+		setCookie(isSidePanelOpenValue.toString(), IS_SIDE_PANEL_OPEN_COOKIE_NAME);
 	});
 
 	function getSelectedData(): RecipeProgressData | undefined {
-		const selectedDataCookieValue = document.cookie
-			.split('; ')
-			.find((row) => row.startsWith('selectedData='))
-			?.split('=')[1];
+		const selectedDataCookieValue = getCookie(SELECTED_DATA_COOKIE_NAME);
 		const recipeData = data.find((recipe) => recipe.craftingRecipeName === selectedDataCookieValue);
 		return recipeData;
 	}
 
-	function getOffset(element: Element) {
-		const rect = element.getBoundingClientRect();
-		return {
-			left: rect.left + window.scrollX,
-			top: rect.top + window.scrollY
-		};
+	function getIsSidePanelOpen() {
+		const isSidePanelOpenValue = getCookie(IS_SIDE_PANEL_OPEN_COOKIE_NAME);
+		return isSidePanelOpenValue === 'true';
 	}
 
 	function openSidePanel(data: RecipeProgressData) {
 		selectedData = data;
 		isSidePanelOpen = true;
+	}
+
+	function handleFocusEvent(craftingRecipeName: string): void {
+		setCookie(craftingRecipeName, FOCUSED_TABLE_ROW_COOKIE_NAME);
+		return undefined;
+	}
+
+	function getFocusableTableRowElement(elementName: string): HTMLElement | undefined {
+		const elementNameShortened = splitByFrom(elementName);
+		const elements = document.querySelectorAll<HTMLElement>(`a[href='${mcWikiLink(elementNameShortened)}'].recipe-link`);
+		if (!elements.length) {
+			return undefined;
+		}
+
+		if (elements.length === 1) {
+			const parentRow = elements[0].closest('tr');
+			if (!parentRow) {
+				return;
+			}
+			return parentRow;
+		}
+
+		const findElementByInnerText = elements.values().find((element) => element.innerText === splitByUnderscore(elementName));
+		if (!findElementByInnerText) {
+			return undefined;
+		}
+		const parentRow = findElementByInnerText.closest('tr');
+		if (!parentRow) {
+			return undefined;
+		}
+		return parentRow;
 	}
 
 	// async function favourite(progressData: RecipeProgressData, isFavourite: boolean) {
@@ -136,53 +169,71 @@
 
 	onMount(() => {
 		selectedData = getSelectedData();
+		isSidePanelOpen = getIsSidePanelOpen();
+		scrollToElementName = getCookie(FOCUSED_TABLE_ROW_COOKIE_NAME);
 	});
 </script>
 
 <h1>Recipes unlocked: {data.filter((recipe) => recipe.isUnlocked).length}/{data.length}</h1>
-<table class="my-8 w-full table-fixed overflow-scroll text-left font-sans text-slate-300">
+<table class="mb-8 mt-4 w-3/4 table-auto overflow-scroll text-left font-sans text-slate-300">
 	<thead class="bg-slate-700">
 		<tr>
 			{#if page.params.slug === 'all'}
-				<th class="w-1/6 border border-slate-500 p-3">Type</th>
+				<th class="w-1/6 border border-slate-500 p-2">Type</th>
 			{/if}
-			<th class="border border-slate-500 p-3">Recipe</th>
-			<th class="border border-slate-500 p-3">Item</th>
-			<th class=" w-1/12 border border-slate-500 p-3">Is craftable</th>
-			<th class=" w-1/12 border border-slate-500 p-3">Related locked recipes</th>
-			<!-- <th class=" w-1/12 border border-slate-500 p-3"></th> -->
+			<th class="border border-slate-500 p-2">Recipe</th>
+			<th class="border border-slate-500 p-2">Item</th>
+			<th class=" w-1/12 border border-slate-500 p-2">Is craftable</th>
+			<th class=" w-1/12 border border-slate-500 p-2">Related locked recipes</th>
+			<!-- <th class=" w-1/12 border border-slate-500 p-2"></th> -->
 		</tr>
 	</thead>
 	<tbody>
 		{#each data as progressData}
-			<tr class="bg-slate-800">
+			<tr
+				tabindex="0"
+				class="focus:outline-solid bg-slate-800 focus:outline-2 focus:outline-purple-500 focus-visible:outline-2 focus-visible:outline-purple-500"
+				onfocus={() => handleFocusEvent(progressData.craftingRecipeName)}
+			>
 				{#if page.params.slug === 'all'}
-					<td class="border border-slate-500 p-3">{progressData.type.split('_').join(' ')}</td>
+					<td class="border border-slate-500 p-2">{splitByUnderscore(progressData.type)}</td>
 				{/if}
-				<td class="border border-slate-500 p-3">
-					<a class="recipe-link flex w-fit gap-2" target="_blank" href={mcWikiLink(progressData.craftingRecipeName)}
-						>{progressData.craftingRecipeName.split('_').join(' ')} <ion-icon class="invisible pt-1" name="open-outline"></ion-icon></a
-					></td
+				<td class="border border-slate-500 p-2">
+					<a class="recipe-link flex w-fit gap-2" target="_blank" href={mcWikiLink(splitByFrom(progressData.craftingRecipeName))}
+						>{splitByUnderscore(progressData.craftingRecipeName)}
+						<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="invisible w-4 fill-white">
+							{@html EXTERNAL_LINK_ICON_PATH}
+						</svg>
+					</a></td
 				>
-				<td class="border border-slate-500 p-3"
+				<td class="border border-slate-500 p-2"
 					>{#if progressData.isUnlocked}
-						<a class="result-link flex w-fit gap-2" target="_blank" href={mcWikiLink(progressData.result)}
-							>{progressData.result.split('_').join(' ')} <ion-icon class="invisible pt-1" name="open-outline"></ion-icon></a
-						>
+						<a class="result-link flex w-fit gap-2" target="_blank" href={mcWikiLink(splitByFrom(progressData.result))}
+							>{splitByUnderscore(progressData.result)}
+							<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="invisible w-4 fill-white">
+								{@html EXTERNAL_LINK_ICON_PATH}
+							</svg>
+						</a>
 					{/if}</td
 				>
-				<td class="border border-slate-500 p-3">
+				<td class="border border-slate-500 p-2">
 					<div class="flex w-full justify-center text-3xl">
 						{#if progressData.meta.isCraftable}
-							<ion-icon class="visible fill-teal-500" name="checkbox"></ion-icon>
+							<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="w-9 fill-teal-500">
+								{@html CHECKMARK_ICON_PATH}
+							</svg>
 						{:else if progressData.meta.isCraftable === false}
-							<ion-icon class="visible fill-rose-500" name="close-circle"></ion-icon>
+							<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="w-9 fill-rose-500">
+								{@html CLOSE_ICON_PATH}
+							</svg>
 						{:else}
-							<ion-icon class="visible fill-slate-400" name="help-circle"></ion-icon>
+							<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="w-9 fill-slate-400">
+								{@html HELP_ICON_PATH}
+							</svg>
 						{/if}
 					</div>
 				</td>
-				<td class="border border-slate-500 p-3 font-bold">
+				<td class="border border-slate-500 p-2 font-bold">
 					<div class="flex w-full justify-center">
 						{#if progressData.isUnlocked}
 							<button class="rounded-full px-3 py-1 {getRelatedRecipesButtonColor(progressData)}" onclick={() => openSidePanel(progressData)}>
@@ -208,9 +259,10 @@
 <RecipePanel bind:isChecked={isSidePanelOpen} bind:scrollToElementName data={selectedData}></RecipePanel>
 
 <style>
-	.recipe-link, .result-link {
-		&:hover ion-icon {
-			visibility: inherit;
+	.recipe-link,
+	.result-link {
+		&:hover svg {
+			visibility: visible;
 		}
 	}
 </style>
