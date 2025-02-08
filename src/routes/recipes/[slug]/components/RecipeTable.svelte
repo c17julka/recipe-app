@@ -13,7 +13,6 @@
 		splitByFrom,
 		splitByUnderscore
 	} from '../../../utils';
-	import type { FocusEventHandler } from 'svelte/elements';
 
 	let { data }: { data: RecipeProgressData[] } = $props();
 
@@ -69,11 +68,6 @@
 		isSidePanelOpen = true;
 	}
 
-	function handleFocusEvent(craftingRecipeName: string): void {
-		setCookie(craftingRecipeName, FOCUSED_TABLE_ROW_COOKIE_NAME);
-		return undefined;
-	}
-
 	function getFocusableTableRowElement(elementName: string): HTMLElement | undefined {
 		const elementNameShortened = splitByFrom(elementName);
 		const elements = document.querySelectorAll<HTMLElement>(`a[href='${mcWikiLink(elementNameShortened)}'].recipe-link`);
@@ -100,59 +94,6 @@
 		return parentRow;
 	}
 
-	// async function favourite(progressData: RecipeProgressData, isFavourite: boolean) {
-	// progressData.meta.favourite = isFavourite;
-	// data = data.sort((first, second) => {
-	// 	if (first.meta.favourite && !second.meta.favourite) {
-	// 		return -1;
-	// 	} else {
-	// 		return 1;
-	// 	}
-	// });
-	// const response = await fetch('favourites', {
-	// 	method: 'POST',
-	// 	body: JSON.stringify([
-	// 		{
-	// 			cake: {
-	// 				isFavourite: true
-	// 			}
-	// 		}
-	// 	]),
-	// 	headers: {
-	// 		'content-type': 'application/json'
-	// 	}
-	// });
-	// const jsonResponse = await response.json();
-	// console.log(jsonResponse);
-	// writeFile('testy.json', JSON.stringify({ testy: 'meow' }), (err) => {
-	// 	if (err) {
-	// 		console.error(String(err));
-	// 	}
-	// });
-	// }
-
-	// function saveAsCookie(progressData: RecipeProgressData, cookieProps: { isFavourite: boolean }) {
-	// 	const cookieValue = document.cookie
-	// 		.split('; ')
-	// 		.find((row) => row.startsWith('favourites='))
-	// 		?.split('=')[1];
-	// 	const cookieValueArray = Array.from(cookieValue ?? []);
-
-	// 	if (!cookieProps.isFavourite) {
-	// 		const dataIndex = cookieValueArray.indexOf(progressData.craftingRecipeName);
-	// 		cookieValueArray.splice(dataIndex, 1);
-	// 	} else {
-	// 		cookieValueArray.push(progressData.craftingRecipeName);
-	// 	}
-
-	// 	const newFavouritesCookieValue = `favourites=${cookieValueArray.toString()}`;
-	// 	if (document.cookie === '' || !cookieValue) {
-	// 		document.cookie = newFavouritesCookieValue;
-	// 	} else {
-	// 		document.cookie.replace(`favourites=${cookieValue}`, newFavouritesCookieValue);
-	// 	}
-	// }
-
 	function getRelatedRecipesButtonColor(progressData: RecipeProgressData): string {
 		const relatedLockedRecipesAmount = progressData.meta.relatedLockedRecipesAmount;
 
@@ -170,7 +111,6 @@
 	onMount(() => {
 		selectedData = getSelectedData();
 		isSidePanelOpen = getIsSidePanelOpen();
-		scrollToElementName = getCookie(FOCUSED_TABLE_ROW_COOKIE_NAME);
 	});
 </script>
 
@@ -185,15 +125,13 @@
 			<th class="border border-slate-500 p-2">Item</th>
 			<th class=" w-1/12 border border-slate-500 p-2">Is craftable</th>
 			<th class=" w-1/12 border border-slate-500 p-2">Related locked recipes</th>
-			<!-- <th class=" w-1/12 border border-slate-500 p-2"></th> -->
 		</tr>
 	</thead>
 	<tbody>
 		{#each data as progressData}
 			<tr
 				tabindex="0"
-				class="focus:outline-solid bg-slate-800 focus:outline-2 focus:outline-purple-500 focus-visible:outline-2 focus-visible:outline-purple-500"
-				onfocus={() => handleFocusEvent(progressData.craftingRecipeName)}
+				class="bg-slate-800 focus:border-2 focus:border-solid focus:border-purple-500"
 			>
 				{#if page.params.slug === 'all'}
 					<td class="border border-slate-500 p-2">{splitByUnderscore(progressData.type)}</td>
@@ -242,15 +180,6 @@
 						{/if}
 					</div>
 				</td>
-				<!-- <td class="border border-slate-500 p-3">
-					<button class="w-full" aria-label="Favourite" onclick={() => favourite(progressData, !progressData.meta.favourite)}>
-						{#if progressData.meta.favourite}
-							<ion-icon name="star"></ion-icon>
-						{:else}
-							<ion-icon name="star-outline"></ion-icon>
-						{/if}
-					</button>
-				</td> -->
 			</tr>
 		{/each}
 	</tbody>

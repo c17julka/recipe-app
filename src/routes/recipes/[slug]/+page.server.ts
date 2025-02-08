@@ -105,7 +105,7 @@ async function loadAllCondensedRecipes(): Promise<ExtendedRecipe[]> {
 }
 
 async function loadAllUnlockedAdvancements(): Promise<Advancements> {
-	const modules = import.meta.glob(`/../users/*.json`);
+	const modules = import.meta.glob(`/../minecraft random PART THREE OPMG/world/advancements/*.json`);
 	const paths = Object.keys(modules);
 	const advancements: Advancements[] = await Promise.all(
 		paths.map(async (path) => {
