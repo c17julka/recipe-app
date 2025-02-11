@@ -28,7 +28,7 @@
 			</svg>
 		</button>
 		<div class="mx-12 mb-6 flex flex-col text-4xl text-slate-900">
-			<h1 class="mb-1 font-semibold">{splitByUnderscore(data?.craftingRecipeName)}</h1>
+			<h1 class="mb-1 font-semibold cursor-pointer hover:text-slate-500" onclick={() => setScrolledToElementName(data?.craftingRecipeName ?? '')}>{splitByUnderscore(data?.craftingRecipeName)}</h1>
 			<div class="align-center mb-8 flex text-4xl">
 				<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" class="visible w-8 stroke-slate-900 stroke-2">
 					{@html ARROW_DOWN_TURN_RIGHT}
