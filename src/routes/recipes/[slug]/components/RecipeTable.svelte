@@ -95,13 +95,13 @@
 	}
 
 	function getRelatedRecipesButtonColor(progressData: RecipeProgressData): string {
-		const relatedLockedRecipesAmount = progressData.meta.relatedLockedRecipesAmount;
+		const unlocksRecipesAmount = progressData.meta.unlocksRecipes?.length;
 
-		if (!relatedLockedRecipesAmount || relatedLockedRecipesAmount === 0) {
+		if (!unlocksRecipesAmount || unlocksRecipesAmount === 0) {
 			return 'bg-slate-600/50';
-		} else if (relatedLockedRecipesAmount <= 3) {
+		} else if (unlocksRecipesAmount <= 3) {
 			return 'bg-violet-500/30';
-		} else if (relatedLockedRecipesAmount <= 10) {
+		} else if (unlocksRecipesAmount <= 10) {
 			return 'bg-violet-600/50';
 		} else {
 			return 'bg-violet-600';
@@ -175,7 +175,7 @@
 					<div class="flex w-full justify-center">
 						{#if progressData.isUnlocked}
 							<button class="rounded-full px-3 py-1 {getRelatedRecipesButtonColor(progressData)}" onclick={() => openSidePanel(progressData)}>
-								{progressData.meta.relatedLockedRecipesAmount}
+								{progressData.meta.unlocksRecipes?.length}
 							</button>
 						{/if}
 					</div>

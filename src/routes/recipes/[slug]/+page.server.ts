@@ -1,7 +1,7 @@
 import { isValidRecipeType, isValidSlug } from '../../utils';
 import type { Advancement as Advancements } from '../types/advancements-data-input';
 import type { ItemGroup } from '../types/recipe-data-input';
-import type { ExtendedRecipe, RecipeAdvancement, RecipeIngredients, RecipeProgressData } from '../types/types';
+import type { ExtendedRecipe, RecipeAdvancement, RecipeIngredients, RecipeProgressData, RecipeProgressMetaData } from '../types/types';
 
 export async function load({ params }): Promise<{ recipeProgressData: RecipeProgressData[] }> {
 	if (!isValidSlug(params.slug)) {
@@ -26,16 +26,16 @@ function extractProgressDataWithMeta(progressData: RecipeProgressData[]): Recipe
 
 	const progressDataWithMeta = progressData.map((data) => {
 		const isCraftable = extractIsCraftableMetaData(data, unlockedRecipeResults, lockedRecipeResults);
-		const { relatedLockedRecipes, relatedUnlockedRecipes } = extractRelatedRecipesMetaData(data, progressData);
+		const relatedRecipes = extractRelatedRecipesMetaData(data, progressData);
 
 		return {
 			...data,
 			meta: {
 				...data.meta,
 				isCraftable: isCraftable,
-				relatedLockedRecipesAmount: relatedLockedRecipes.length,
-				relatedLockedRecipes: relatedLockedRecipes,
-				relatedUnlockedRecipes: relatedUnlockedRecipes
+				relatedLockedRecipes: relatedRecipes.relatedLockedRecipes,
+				relatedUnlockedRecipes: relatedRecipes.relatedUnlockedRecipes,
+				unlocksRecipes: relatedRecipes.unlocksRecipes
 			}
 		};
 	});
@@ -43,15 +43,15 @@ function extractProgressDataWithMeta(progressData: RecipeProgressData[]): Recipe
 }
 
 function extractIsCraftableMetaData(data: RecipeProgressData, unlockedRecipeResults: string[], lockedRecipeResults: string[]): boolean | null {
-	const optionalIngredientItems = data.recipeIngredients.optionalItems;
 	const requiredIngredientItems = data.recipeIngredients.requiredItems;
+	const optionalIngredientItems = data.recipeIngredients.optionalItems;
 
 	const hasAllRequiredItems =
 		!requiredIngredientItems.length || requiredIngredientItems.every((ingredient) => unlockedRecipeResults.includes(ingredient));
-	const hasAllOptionalItems =
+	const hasSomeOptionalItems =
 		!optionalIngredientItems.length || optionalIngredientItems.some((ingredient) => unlockedRecipeResults.includes(ingredient));
 
-	const isRecipeCraftable = hasAllRequiredItems && hasAllOptionalItems;
+	const isRecipeCraftable = hasAllRequiredItems && hasSomeOptionalItems;
 	const isRequiredItemsCraftable =
 		!requiredIngredientItems.length ||
 		requiredIngredientItems.every((item) => unlockedRecipeResults.includes(item) || lockedRecipeResults.includes(item));
@@ -67,10 +67,7 @@ function extractIsCraftableMetaData(data: RecipeProgressData, unlockedRecipeResu
 function extractRelatedRecipesMetaData(
 	data: RecipeProgressData,
 	allRecipes: RecipeProgressData[]
-): {
-	relatedLockedRecipes: RecipeProgressData[];
-	relatedUnlockedRecipes: RecipeProgressData[];
-} {
+): Pick<RecipeProgressMetaData, 'relatedLockedRecipes' | 'relatedUnlockedRecipes' | 'unlocksRecipes'> {
 	const relatedRecipes = allRecipes.filter((recipe) => {
 		const requiredItems = recipe.recipeIngredients.requiredItems;
 		const optionalItems = recipe.recipeIngredients.optionalItems;
@@ -79,7 +76,12 @@ function extractRelatedRecipesMetaData(
 	});
 	const relatedLockedRecipes = relatedRecipes.filter((recipe) => !recipe.isUnlocked);
 	const relatedUnlockedRecipes = relatedRecipes.filter((recipe) => recipe.isUnlocked);
-	return { relatedLockedRecipes: relatedLockedRecipes, relatedUnlockedRecipes: relatedUnlockedRecipes };
+	const unlocksRecipes = relatedLockedRecipes.filter((recipe) => recipe.recipeIngredients.isUnlockedWithItems.includes(data.result));
+	return {
+		relatedLockedRecipes: relatedLockedRecipes,
+		relatedUnlockedRecipes: relatedUnlockedRecipes,
+		unlocksRecipes: unlocksRecipes
+	};
 }
 
 function extractProgressDataFromSlug(slug: string, recipeProgressData: RecipeProgressData[]): RecipeProgressData[] {
@@ -196,71 +198,74 @@ function extractRecipeResultItem(recipe: ExtendedRecipe): string {
 }
 
 function extractRecipeIngredients(recipe: ExtendedRecipe): RecipeIngredients {
-	const hasRecipeIngredientsArray = recipe.ingredients?.some((ingredient) => Array.isArray(ingredient));
-
-	const itemGroupsFromKey = Object.values(recipe.key ?? {});
-	const recipeKeyHasArray = itemGroupsFromKey.some((ingredient) => Array.isArray(ingredient));
 	if (recipe.ingredient) {
 		if (Array.isArray(recipe.ingredient)) {
+			const requiredItems = recipe.ingredient.map((ingredient) => extractItemsFromItemGroup(ingredient, recipe.recipeName));
 			return {
-				requiredItems: [...new Set(recipe.ingredient.map((ingredient) => extractItemsFromItemGroup(ingredient, recipe.recipeName)))],
-				optionalItems: []
+				requiredItems: [...new Set(requiredItems)],
+				optionalItems: [],
+				isUnlockedWithItems: [...new Set(requiredItems)]
 			};
 		} else {
+			const requiredItems = [extractItemsFromItemGroup(recipe.ingredient, recipe.recipeName)];
 			return {
-				requiredItems: [...new Set([extractItemsFromItemGroup(recipe.ingredient, recipe.recipeName)])],
-				optionalItems: []
+				requiredItems: [...new Set(requiredItems)],
+				optionalItems: [],
+				isUnlockedWithItems: [...new Set(requiredItems)]
 			};
 		}
-	} else if (recipe.ingredients && !hasRecipeIngredientsArray) {
-		return {
-			requiredItems: [...new Set(recipe.ingredients.map((ingredient) => extractItemsFromItemGroup(ingredient as ItemGroup, recipe.recipeName)))],
-			optionalItems: []
-		};
-	} else if (recipe.ingredients && hasRecipeIngredientsArray) {
+	} else if (recipe.ingredients) {
 		const requiredItemGroups = recipe.ingredients.filter((ingredient): ingredient is ItemGroup => !Array.isArray(ingredient));
 		const requiredItems = requiredItemGroups.map((itemGroup) => extractItemsFromItemGroup(itemGroup, recipe.recipeName));
 
 		const optionalItemGroups = recipe.ingredients.filter((ingredient): ingredient is ItemGroup[] => Array.isArray(ingredient)).flat();
 		const optionalItems = optionalItemGroups.map((itemGroup) => extractItemsFromItemGroup(itemGroup, recipe.recipeName));
 
+		// TODO: find the other edge-cases, then extract from method in a cleaner way
+		const isMinecartItem = requiredItems.includes('minecart');
+
 		return {
 			requiredItems: [...new Set(requiredItems)],
-			optionalItems: [...new Set(optionalItems)]
+			optionalItems: [...new Set(optionalItems)],
+			isUnlockedWithItems: isMinecartItem ? ['minecart'] : [...new Set([...requiredItems, ...optionalItems])]
 		};
-	} else if (recipe.key && !recipeKeyHasArray) {
-		const itemGroupsFromKey = Object.values(recipe.key);
-		return {
-			requiredItems: [...new Set(itemGroupsFromKey.map((itemGroup) => extractItemsFromItemGroup(itemGroup as ItemGroup, recipe.recipeName)))],
-			optionalItems: []
-		};
-	} else if (recipe.key && recipeKeyHasArray) {
+	} else if (recipe.key) {
+		const itemGroupsFromKey = Object.values(recipe.key ?? {});
+
 		const requiredItemGroups = itemGroupsFromKey.filter((ingredient): ingredient is ItemGroup => !Array.isArray(ingredient));
 		const requiredItems = requiredItemGroups.map((itemGroup) => extractItemsFromItemGroup(itemGroup, recipe.recipeName));
 
 		const optionalItemGroups = itemGroupsFromKey.filter((ingredient): ingredient is ItemGroup[] => Array.isArray(ingredient)).flat();
 		const optionalItems = optionalItemGroups.map((itemGroup) => extractItemsFromItemGroup(itemGroup, recipe.recipeName));
 
+		const isArmorTemplate = recipe.recipeName.endsWith('armor_trim_smithing_template');
+
 		return {
 			requiredItems: [...new Set(requiredItems)],
-			optionalItems: [...new Set(optionalItems)]
+			optionalItems: [...new Set(optionalItems)],
+			// the recipe to craft armor templates are the ones that duplicate themselves
+			isUnlockedWithItems: isArmorTemplate ? [recipe.recipeName] : [...new Set([...requiredItems, ...optionalItems])]
 		};
-	} else if (recipe.base && recipe.addition) {
+	}
+	// this is only used for type: "minecraft:smithing_transform" recipes, with netherite ingot as "addition"
+	else if (recipe.base && recipe.addition) {
 		const baseItems = [extractItemsFromItemGroup(recipe.base, recipe.recipeName)];
 		const additionItems = [extractItemsFromItemGroup(recipe.addition, recipe.recipeName)];
+
 		return {
 			requiredItems: [...new Set(baseItems.concat(additionItems))],
-			optionalItems: []
+			optionalItems: [],
+			isUnlockedWithItems: [...new Set(additionItems)]
 		};
 	} else {
-		throw new Error(`No valid data type when extracting required items in recipe: ${recipe.recipeName}.`);
+		throw new Error(`No valid data type when extracting ingredients in recipe: ${recipe.recipeName}.`);
 	}
 }
 
 function extractItemsFromItemGroup(itemGroup: ItemGroup, recipeName: string): string {
 	const item = itemGroup.item ?? itemGroup.tag;
 	if (!item) {
-		throw Error(`No item found when extracting recipe.ingredient for recipe: ${recipeName}.`);
+		throw Error(`No item found when extracting ingredients for recipe: ${recipeName}.`);
 	}
 	return item.split(':')[1];
 }

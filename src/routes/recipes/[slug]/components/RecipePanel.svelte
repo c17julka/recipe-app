@@ -27,22 +27,28 @@
 				{@html CLOSE_OUTLINE_ICON_PATH}
 			</svg>
 		</button>
-		<div class="mx-12 mb-6 flex flex-col text-4xl text-slate-900">
-			<h1 class="mb-1 font-semibold cursor-pointer hover:text-slate-500" onclick={() => setScrolledToElementName(data?.craftingRecipeName ?? '')}>{splitByUnderscore(data?.craftingRecipeName)}</h1>
+		<div class="mx-12 mb-6 flex flex-col text-4xl font-semibold text-slate-900">
+			<h1 class="mb-1 cursor-pointer hover:text-slate-500" onclick={() => setScrolledToElementName(data?.craftingRecipeName ?? '')}>
+				{splitByUnderscore(data?.craftingRecipeName)}
+			</h1>
 			<div class="align-center mb-8 flex text-4xl">
 				<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" class="visible w-8 stroke-slate-900 stroke-2">
 					{@html ARROW_DOWN_TURN_RIGHT}
 				</svg>
-				<h1 class="font-semibold">{splitByUnderscore(data?.result)}</h1>
+				<h1 class="">{splitByUnderscore(data?.result)}</h1>
 			</div>
-			{#if data?.meta.relatedLockedRecipesAmount}
-				<h2 class="flex flex-row gap-1 text-2xl font-semibold">
+			<p class="mb-6 text-lg">
+				Obtaining <span class="font-bold">{splitByUnderscore(data?.result)}</span> unlocks
+				<span class="font-bold">{data?.meta.unlocksRecipes?.length ?? 0}</span> recipe(s).
+			</p>
+			{#if data?.meta.relatedLockedRecipes?.length}
+				<h2 class="flex flex-row gap-1 text-2xl">
 					<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" class="w-5 stroke-slate-900 stroke-2 pt-1">
 						{@html LOCKED_PATH}
 					</svg>
 					Result used in locked recipes:
 				</h2>
-				<ul class="mb-6 ml-5 list-disc text-lg font-semibold text-slate-500">
+				<ul class="mb-6 ml-5 list-disc text-lg text-slate-500">
 					{#each data?.meta.relatedLockedRecipes ?? [] as relatedRecipe}
 						<li class="w-fit cursor-pointer hover:text-slate-900" onclick={() => setScrolledToElementName(relatedRecipe.craftingRecipeName)}>
 							{splitByUnderscore(relatedRecipe.craftingRecipeName)}
@@ -51,13 +57,13 @@
 				</ul>
 			{/if}
 			{#if data?.meta.relatedUnlockedRecipes?.length}
-				<h2 class="flex flex-row gap-1  text-2xl font-semibold">
+				<h2 class="flex flex-row gap-1 text-2xl">
 					<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" class="w-5 stroke-slate-900 stroke-2 pt-1">
 						{@html UNLOCKED_PATH}
 					</svg>
 					Result used in unlocked recipes:
 				</h2>
-				<ul class="ml-5 list-disc text-lg font-semibold text-slate-500">
+				<ul class="ml-5 list-disc text-lg text-slate-500">
 					{#each data?.meta.relatedUnlockedRecipes ?? [] as relatedRecipe}
 						<li class="w-fit cursor-pointer hover:text-slate-900" onclick={() => setScrolledToElementName(relatedRecipe.craftingRecipeName)}>
 							{splitByUnderscore(relatedRecipe.craftingRecipeName)}

@@ -12,21 +12,24 @@ export interface RecipeProgressData {
 	iconPath?: string;
 	type: RecipeType;
 	recipeIngredients: RecipeIngredients;
-	meta: {
-		favourite?: boolean;
-		isCraftable?: boolean | null;
-		relatedLockedRecipesAmount?: number;
-		relatedLockedRecipes?: RecipeProgressData[];
-		relatedUnlockedRecipes?: RecipeProgressData[];
-	};
+	meta: RecipeProgressMetaData;
 }
 
 export interface RecipeIngredients {
 	requiredItems: string[]; // all items are required
 	optionalItems: string[]; // only one of these items are required
+	isUnlockedWithItems: string[]; // need to be obtained by the player in order to unlock the recipe
 }
 
 export interface RecipeAdvancement {
 	recipeName: string;
 	isUnlocked: boolean;
+}
+
+export interface RecipeProgressMetaData {
+	favourite?: boolean;
+	isCraftable?: boolean | null;
+	relatedLockedRecipes?: RecipeProgressData[];
+	relatedUnlockedRecipes?: RecipeProgressData[];
+	unlocksRecipes?: RecipeProgressData[];
 }
