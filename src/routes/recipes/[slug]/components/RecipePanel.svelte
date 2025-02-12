@@ -18,24 +18,26 @@
 
 <div class="flex h-full">
 	<div
-		class="fixed inset-y-0 right-0 h-full w-1/4 transform resize overflow-auto bg-white transition-all duration-300"
+		class="fixed inset-y-0 right-0 h-full w-1/4 transform resize overflow-auto bg-violet-300 text-slate-950 transition-all duration-300"
 		class:-translate-x-0={isChecked && data}
 		class:translate-x-full={!isChecked || !data}
 	>
 		<button class="m-3" type="button" aria-label="Close panel" onclick={() => (isChecked = false)}>
-			<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="visible w-8 stroke-slate-900 stroke-2">
+			<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="visible w-8 stroke-slate-950 stroke-2">
 				{@html CLOSE_OUTLINE_ICON_PATH}
 			</svg>
 		</button>
-		<div class="mx-12 mb-6 flex flex-col text-4xl font-semibold text-slate-900">
-			<h1 class="mb-1 cursor-pointer hover:text-slate-500" onclick={() => setScrolledToElementName(data?.craftingRecipeName ?? '')}>
+		<div class="mx-12 mb-6 flex flex-col text-4xl font-semibold">
+			<!-- svelte-ignore a11y_click_events_have_key_events -->
+			<!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
+			<h1 class="mb-1 cursor-pointer hover:underline" onclick={() => setScrolledToElementName(data?.craftingRecipeName ?? '')}>
 				{splitByUnderscore(data?.craftingRecipeName)}
 			</h1>
 			<div class="align-center mb-8 flex text-4xl">
-				<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" class="visible w-8 stroke-slate-900 stroke-2">
+				<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" class="visible w-8 stroke-slate-950 stroke-2">
 					{@html ARROW_DOWN_TURN_RIGHT}
 				</svg>
-				<h1 class="">{splitByUnderscore(data?.result)}</h1>
+				<h1>{splitByUnderscore(data?.result)}</h1>
 			</div>
 			<p class="mb-6 text-lg">
 				Obtaining <span class="font-bold">{splitByUnderscore(data?.result)}</span> unlocks
@@ -48,9 +50,14 @@
 					</svg>
 					Result used in locked recipes:
 				</h2>
-				<ul class="mb-6 ml-5 list-disc text-lg text-slate-500">
+				<ul class="mb-6 ml-5 list-disc text-lg">
 					{#each data?.meta.relatedLockedRecipes ?? [] as relatedRecipe}
-						<li class="w-fit cursor-pointer hover:text-slate-900" onclick={() => setScrolledToElementName(relatedRecipe.craftingRecipeName)}>
+						<!-- svelte-ignore a11y_click_events_have_key_events -->
+						<!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
+						<li
+							class="w-fit cursor-pointer text-slate-950 hover:hover:underline"
+							onclick={() => setScrolledToElementName(relatedRecipe.craftingRecipeName)}
+						>
 							{splitByUnderscore(relatedRecipe.craftingRecipeName)}
 						</li>
 					{/each}
@@ -63,36 +70,16 @@
 					</svg>
 					Result used in unlocked recipes:
 				</h2>
-				<ul class="ml-5 list-disc text-lg text-slate-500">
+				<ul class="ml-5 list-disc text-lg">
 					{#each data?.meta.relatedUnlockedRecipes ?? [] as relatedRecipe}
-						<li class="w-fit cursor-pointer hover:text-slate-900" onclick={() => setScrolledToElementName(relatedRecipe.craftingRecipeName)}>
+						<!-- svelte-ignore a11y_click_events_have_key_events -->
+						<!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
+						<li class="w-fit cursor-pointer hover:hover:underline" onclick={() => setScrolledToElementName(relatedRecipe.craftingRecipeName)}>
 							{splitByUnderscore(relatedRecipe.craftingRecipeName)}
 						</li>
 					{/each}
 				</ul>
 			{/if}
 		</div>
-		<!-- <div class="mx-12 flex flex-col text-slate-900">
-			<div class="flex">
-				<h2 class="text-lg font-semibold">{data?.result.split('_').join(' ')}</h2>
-				{#if data?.meta.relatedLockedRecipesAmount}
-					<button aria-label="Expand">
-						<ion-icon class="visible ml-2 text-3xl" name="chevron-down-outline"></ion-icon>
-					</button>
-				{/if}
-			</div>
-			<ul class="list-point ml-5 text-lg font-semibold text-slate-500">
-				{#each data?.meta.relatedLockedRecipes ?? [] as relatedRecipe}
-					<li class="my-1 flex">
-						{relatedRecipe.craftingRecipeName.split('_').join(' ')}
-						{#if relatedRecipe?.meta.relatedLockedRecipesAmount}
-							<button aria-label="Expand">
-								<ion-icon class="visible ml-2 text-3xl" name="chevron-down-outline"></ion-icon>
-							</button>
-						{/if}
-					</li>
-				{/each}
-			</ul>
-		</div> -->
 	</div>
 </div>
