@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { ARROW_DOWN_TURN_RIGHT, CLOSE_OUTLINE_ICON_PATH, LOCKED_PATH, UNLOCKED_PATH } from '../../../../../static/icons/icons';
+	import { ARROW_DOWN_TURN_RIGHT_PATH, CLOSE_OUTLINE_ICON_PATH, LOCKED_PATH, UNLOCKED_PATH } from '../../../../../static/icons/icons';
 	import { splitByUnderscore } from '../../../utils';
 	import type { RecipeProgressData } from '../../types/types';
 
@@ -34,8 +34,8 @@
 				{splitByUnderscore(data?.craftingRecipeName)}
 			</h1>
 			<div class="align-center mb-8 flex text-4xl">
-				<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" class="visible w-8 stroke-slate-950 stroke-2">
-					{@html ARROW_DOWN_TURN_RIGHT}
+				<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" class="visible w-8 stroke-slate-900 stroke-2">
+					{@html ARROW_DOWN_TURN_RIGHT_PATH}
 				</svg>
 				<h1>{splitByUnderscore(data?.result)}</h1>
 			</div>

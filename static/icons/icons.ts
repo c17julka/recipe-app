@@ -15,7 +15,7 @@ export const CLOSE_OUTLINE_ICON_PATH = `
   <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
 `;
 
-export const ARROW_DOWN_TURN_RIGHT = `
+export const ARROW_DOWN_TURN_RIGHT_PATH = `
   <path stroke-linecap="round" stroke-linejoin="round" d="m16.49 12 3.75 3.75m0 0-3.75 3.75m3.75-3.75H3.74V4.499" />
 `;
 
@@ -25,4 +25,7 @@ export const LOCKED_PATH = `
 
 export const UNLOCKED_PATH = `
   <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 10.5V6.75a4.5 4.5 0 1 1 9 0v3.75M3.75 21.75h10.5a2.25 2.25 0 0 0 2.25-2.25v-6.75a2.25 2.25 0 0 0-2.25-2.25H3.75a2.25 2.25 0 0 0-2.25 2.25v6.75a2.25 2.25 0 0 0 2.25 2.25Z" />
+`;
+export const ARROW_DOWN_PATH = `
+  <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 13.5 12 21m0 0-7.5-7.5M12 21V3" />
 `;

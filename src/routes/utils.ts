@@ -3,6 +3,7 @@ import { RECIPE_TYPES, SLUG_TYPES, type RecipeType, type SlugType } from './type
 export const SELECTED_DATA_COOKIE_NAME = 'selectedData';
 export const IS_SIDE_PANEL_OPEN_COOKIE_NAME = 'isSidePanelOpen';
 export const FOCUSED_TABLE_ROW_COOKIE_NAME = 'focusedTableRow';
+export const SORT_DATA_COOKIE_NAME = 'sortData';
 
 export function isValidRecipeType(value: unknown): value is RecipeType {
 	for (const recipe of RECIPE_TYPES) {
@@ -44,4 +45,18 @@ export function getCookie(cookieName: string): string | undefined {
 
 export function deleteCookie(cookieName: string): void {
 	document.cookie = `${cookieName}=; expires=Thu, 01 Jan 1970 00:00:00 UTC;`;
+}
+
+export function extractFieldByPath<T>(obj: T, path: string): unknown {
+	const segments = path.split('.');
+
+	let current: unknown = obj;
+	for (const segment of segments) {
+		if (!!current && typeof current === 'object') {
+			// eslint-disable-next-line @typescript-eslint/no-explicit-any
+			current = (current as any)[segment];
+		}
+	}
+
+	return current;
 }

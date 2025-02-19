@@ -96,8 +96,7 @@ async function getRecipeProgress(): Promise<RecipeProgressData[]> {
 	const allRecipes = await loadAllCondensedRecipes();
 	const unlockedAdvancements = await loadAllUnlockedAdvancements();
 	const recipeProgress = extractRecipeProgress(allRecipes, unlockedAdvancements);
-	const sortedByIsUnlocked = recipeProgress.sort((recipe) => (recipe.isUnlocked ? -1 : 1));
-	return sortedByIsUnlocked;
+	return recipeProgress;
 }
 
 async function loadAllCondensedRecipes(): Promise<ExtendedRecipe[]> {
@@ -115,7 +114,7 @@ async function loadAllCondensedRecipes(): Promise<ExtendedRecipe[]> {
 }
 
 async function loadAllUnlockedAdvancements(): Promise<Advancements> {
-	const modules = import.meta.glob(`/../minecraft random PART THREE OPMG/world/advancements/*.json`);
+	const modules = import.meta.glob(`/../minecraft random p2/world/advancements/*.json`);
 	const paths = Object.keys(modules);
 	const advancements: Advancements[] = await Promise.all(
 		paths.map(async (path) => {
@@ -151,29 +150,26 @@ function extractRecipeProgress(allRecipes: ExtendedRecipe[], unlockedAdvancement
 		})
 		.filter((recipe) => recipe.isUnlocked);
 
-	const recipeProgressData: RecipeProgressData[] = allRecipes
-		.map((recipe) => {
-			const isUnlocked = !!unlockedRecipes.find((unlockedRecipe) => unlockedRecipe.recipeName === recipe.recipeName);
-			const condensedType = recipe.type?.split(':')[1];
+	const recipeProgressData: RecipeProgressData[] = allRecipes.map((recipe) => {
+		const isUnlocked = !!unlockedRecipes.find((unlockedRecipe) => unlockedRecipe.recipeName === recipe.recipeName);
+		const condensedType = recipe.type?.split(':')[1];
 
-			if (!condensedType || !isValidRecipeType(condensedType)) {
-				throw new Error(`Could not find a valid type for recipe: ${recipe.recipeName}.`);
-			}
+		if (!condensedType || !isValidRecipeType(condensedType)) {
+			throw new Error(`Could not find a valid type for recipe: ${recipe.recipeName}.`);
+		}
 
-			const recipeIngredients = extractRecipeIngredients(recipe);
+		const recipeIngredients = extractRecipeIngredients(recipe);
 
-			const progressData: RecipeProgressData = {
-				craftingRecipeName: recipe.recipeName,
-				result: extractRecipeResultItem(recipe),
-				isUnlocked: isUnlocked,
-				type: condensedType,
-				recipeIngredients: recipeIngredients,
-				meta: {}
-			};
-			return progressData;
-		})
-		.sort((recipe1, recipe2) => recipe2.craftingRecipeName.localeCompare(recipe1.craftingRecipeName))
-		.sort((recipe1, recipe2) => recipe2.type.localeCompare(recipe1.type));
+		const progressData: RecipeProgressData = {
+			craftingRecipeName: recipe.recipeName,
+			result: extractRecipeResultItem(recipe),
+			isUnlocked: isUnlocked,
+			type: condensedType,
+			recipeIngredients: recipeIngredients,
+			meta: {}
+		};
+		return progressData;
+	});
 
 	return recipeProgressData;
 }
